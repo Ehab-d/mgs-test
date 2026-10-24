@@ -37,14 +37,15 @@ const optsOf = (list, label, cur) => list.filter(x => x.active !== false || x.id
 
 /* نموذج إدخال عام */
 function fieldHtml(f, v) {
-  const id = 'f_' + f.k, cls = f.full ? ' full' : '';
+  const cls = f.full ? ' full' : '';
   if (f.type === 'checkbox') return `<label class="chk${cls}"><input type="checkbox" name="${f.k}" ${v ? 'checked' : ''}> ${esc(f.label)}</label>`;
   if (f.type === 'select') {
     const o = (f.opts || []).map(([val, t]) => `<option value="${esc(val)}" ${String(val) === String(v ?? '') ? 'selected' : ''}>${esc(t)}</option>`).join('');
     return `<label class="${cls.trim()}">${esc(f.label)}<select name="${f.k}" ${f.req ? 'required' : ''}>${o}</select></label>`;
   }
-  const extra = [f.type === 'tel' ? 'inputmode="tel" dir="ltr"' : '', f.type === 'number' ? 'inputmode="numeric" min="1"' : '', f.pattern ? `pattern="${f.pattern}" title="${esc(f.hint || '')}" maxlength="4" inputmode="numeric" dir="ltr"` : '', f.ph ? `placeholder="${esc(f.ph)}"` : ''].join(' ');
-  return `<label class="${cls.trim()}">${esc(f.label)}<input name="${f.k}" type="${f.type === 'number' ? 'number' : 'text'}" value="${esc(v ?? '')}" ${f.req ? 'required' : ''} ${extra}></label>`;
+  const extra = [f.type === 'tel' ? 'inputmode="tel" dir="ltr"' : '', f.type === 'number' ? 'inputmode="numeric" min="1"' : '', f.type === 'password' ? 'dir="ltr" autocomplete="new-password"' : '', f.pattern ? `pattern="${f.pattern}" title="${esc(f.hint || '')}" maxlength="4" inputmode="numeric" dir="ltr"` : '', f.ph ? `placeholder="${esc(f.ph)}"` : ''].join(' ');
+  const t = f.type === 'number' ? 'number' : f.type === 'password' ? 'password' : 'text';
+  return `<label class="${cls.trim()}">${esc(f.label)}<input name="${f.k}" type="${t}" value="${esc(v ?? '')}" ${f.req ? 'required' : ''} ${extra}></label>`;
 }
 function openForm({ title, fields, values = {}, onSave, onDelete }) {
   const d = document.createElement('dialog');
@@ -62,6 +63,7 @@ function openForm({ title, fields, values = {}, onSave, onDelete }) {
     for (const f of fields) {
       const el = form.elements[f.k];
       if (f.type === 'checkbox') v[f.k] = el.checked;
+      else if (f.type === 'password') v[f.k] = el.value;
       else { let x = el.value.trim(); if (f.type === 'number') x = x === '' ? null : Number(x); else if (x === '') x = f.req ? x : null; v[f.k] = x; }
     }
     const btn = form.querySelector('[type=submit]'); btn.disabled = true;

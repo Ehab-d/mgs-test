@@ -1,15 +1,6 @@
-/* التنقل + تسجيل الدخول */
+/* التنقل + تسجيل الدخول + الحساب */
 const VIEWS = { students: showStudents, routes: showRoutes, drivers: () => showLookup('drivers'), supervisors: () => showLookup('supervisors'), buses: () => showLookup('buses') };
 let curView = 'students';
-
-function go(v) {
-  curView = v;
-  const m = $('#main'); m.onclick = m.onchange = null;
-  document.querySelectorAll('#tabs button').forEach(b => b.dataset.v === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
-  moveInd();
-  m.innerHTML = '<div class="empty">جاري التحميل…</div>';
-  VIEWS[v]().catch(e => toast(errMsg(e), 'err'));
-}
 
 function moveInd() {
   const a = document.querySelector('#tabs [aria-current]'), i = $('#tabs .ind');
@@ -27,6 +18,15 @@ document.querySelectorAll('#tabs button').forEach(b => tabRO.observe(b));
 addEventListener('resize', moveInd);
 if (document.fonts) document.fonts.ready.then(moveInd);
 
+function go(v) {
+  curView = v;
+  const m = $('#main'); m.onclick = m.onchange = null;
+  document.querySelectorAll('#tabs button').forEach(b => b.dataset.v === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  moveInd();
+  m.innerHTML = '<div class="empty">جاري التحميل…</div>';
+  VIEWS[v]().catch(e => toast(errMsg(e), 'err'));
+}
+
 function showApp(on) { $('#app').hidden = !on; $('#login').hidden = on; if (on) go(curView); }
 
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) { go(b.dataset.v); b.scrollIntoView({ inline: 'center', block: 'nearest' }); } };
@@ -41,3 +41,19 @@ $('#loginForm').onsubmit = async e => {
 let wasIn = false;
 sb.auth.onAuthStateChange((_ev, session) => { const on = !!session; if (on !== wasIn) { wasIn = on; showApp(on); } });
 sb.auth.getSession().then(({ data }) => { if (!data.session) showApp(false); });
+
+/* تغيير اسم المستخدم / كلمة المرور (محفوظين في قاعدة البيانات) */
+$('#account').onclick = () => openForm({
+  title: 'حسابي – تغيير اسم المستخدم وكلمة المرور',
+  fields: [
+    { k: 'cur', label: 'كلمة المرور الحالية', type: 'password', req: true, full: true },
+    { k: 'u', label: 'اسم المستخدم الجديد (سيبه فاضي لو مش عايز تغيّره)', full: true },
+    { k: 'p', label: 'كلمة المرور الجديدة (6 حروف على الأقل – سيبها فاضية لو مش عايز تغيّرها)', type: 'password', full: true }
+  ],
+  onSave: async v => {
+    if (!v.u && !v.p) throw new Error('اكتب اسم مستخدم أو كلمة مرور جديدة');
+    await run(sb.rpc('change_credentials', { current_password: v.cur, new_username: v.u || '', new_password: v.p || '' }));
+    toast('تم التغيير، سجّل دخول من جديد');
+    setTimeout(() => sb.auth.signOut(), 800);
+  }
+});
