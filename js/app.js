@@ -29,7 +29,7 @@ function go(v) {
 
 function showApp(on) { $('#app').hidden = !on; $('#login').hidden = on; if (on) go(curView); }
 
-$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) { go(b.dataset.v); b.scrollIntoView({ inline: 'center', block: 'nearest' }); } };
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); };
 $('#logout').onclick = () => sb.auth.signOut();
 $('#loginForm').onsubmit = async e => {
   e.preventDefault();
