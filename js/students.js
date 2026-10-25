@@ -26,9 +26,9 @@ async function showStudents() {
     ${sel('bus_paid', 'حالة الاشتراك', [['1', 'مدفوع'], ['0', 'غير مدفوع']], SF.bus_paid, 'الكل')}
     <button class="btn ghost" id="sReset">مسح الفلاتر</button>
   </div>
-  <div class="stats" id="sStats"></div><div id="sBulk"></div>
-  <div class="wrap"><table><thead><tr><th class="hide-m"><input type="checkbox" id="sAll" aria-label="تحديد الكل" style="width:auto"></th><th class="hide-m">م</th><th>الطالب</th><th>الصف</th><th>العنوان</th><th>الهاتف</th><th>حالة الاشتراك</th><th>الخط / السائق / المشرفة</th><th class="hide-m"></th></tr></thead><tbody id="sBody"></tbody></table><div id="sEmpty" class="empty" hidden>لا يوجد طلاب بهذه الاختيارات.</div></div>
-  <div class="pager" id="sPager"></div>`;
+  <div class="stats" id="sStats" aria-live="polite"></div><div id="sBulk"></div>
+  <div class="wrap"><table><caption class="sr">قائمة الطلبة</caption><thead><tr><th scope="col" class="hide-m"><input type="checkbox" id="sAll" aria-label="تحديد الكل"></th><th scope="col" class="hide-m">م</th><th scope="col">الطالب</th><th scope="col">الصف</th><th scope="col">العنوان</th><th scope="col">الهاتف</th><th scope="col">حالة الاشتراك</th><th scope="col">الخط / السائق / المشرفة</th><th scope="col" class="hide-m"></th></tr></thead><tbody id="sBody"></tbody></table><div id="sEmpty" class="empty" hidden>لا يوجد طلاب بهذه الاختيارات.</div></div>
+  <div class="pager" id="sPager" role="navigation" aria-label="التنقل بين الصفحات"></div>`;
   let timer;
   $('#sQ').oninput = e => { clearTimeout(timer); timer = setTimeout(() => { SF.q = e.target.value; SS.page = 0; loadStudents(); }, 300); };
   m.querySelectorAll('[data-f]').forEach(el => el.onchange = () => { SF[el.dataset.f] = el.value; SS.page = 0; loadStudents(); });
@@ -62,15 +62,15 @@ async function loadStudents() {
 function drawStudents() {
   $('#sStats').innerHTML = [[SS.total, 'عدد الطلبة'], [SS.paid, 'مدفوع'], [SS.total - SS.paid, 'غير مدفوع']].map(([a, b]) => `<div class="stat"><b>${a}</b><span>${b}</span></div>`).join('');
   $('#sBody').innerHTML = SS.rows.map((s, i) => `<tr>
-    <td class="hide-m"><input type="checkbox" data-sel="${s.id}" ${SS.sel.has(s.id) ? 'checked' : ''} aria-label="تحديد" style="width:auto"></td>
+    <td class="hide-m"><input type="checkbox" data-sel="${s.id}" ${SS.sel.has(s.id) ? 'checked' : ''} aria-label="تحديد ${esc(s.name)}"></td>
     <td class="hide-m">${SS.page * SS.size + i + 1}</td>
     <td class="full-m"><b>${esc(s.name)}</b></td>
     <td data-l="الصف"><span class="gr gr-${esc(s.grade)}">${esc(s.grade)}</span></td>
     <td data-l="العنوان" class="full-m">${esc(s.address) || '—'}</td>
     <td class="ph" data-l="الهاتف">${[s.phone1, s.phone2].filter(Boolean).map(p => `<a href="tel:${esc(p)}">${esc(p)}</a>`).join('<br>') || '—'}</td>
-    <td data-l="حالة الاشتراك"><button class="tag ${s.bus_paid ? 'y' : 'n'}" data-a="paid" data-id="${s.id}" title="اضغط للتغيير">${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}</button></td>
+    <td data-l="حالة الاشتراك"><button class="tag ${s.bus_paid ? 'y' : 'n'}" data-a="paid" data-id="${s.id}" aria-label="اشتراك ${esc(s.name)}: ${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}، اضغط للتغيير">${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}</button></td>
     <td class="full-m" data-l="الخط">${s.route_num ? `<b>${s.route_num} – ${esc(s.route_name)}</b><small>${[s.driver_name && 'سائق: ' + s.driver_name, s.supervisor_name && 'مشرفة: ' + s.supervisor_name, s.bus_plate && 'لوحة: ' + s.bus_plate].filter(Boolean).map(esc).join(' · ')}</small>` : '<span class="tag n">بدون خط</span>'}</td>
-    <td class="full-m"><button class="btn ghost sm" data-a="edit" data-id="${s.id}" style="width:100%">تعديل</button></td></tr>`).join('');
+    <td class="full-m"><button class="btn ghost sm" data-a="edit" data-id="${s.id}" aria-label="تعديل ${esc(s.name)}" style="width:100%">تعديل</button></td></tr>`).join('');
   $('#sEmpty').hidden = SS.rows.length > 0;
   const pages = Math.max(1, Math.ceil(SS.total / SS.size));
   $('#sPager').innerHTML = `<button class="btn ghost sm" id="pPrev" ${SS.page === 0 ? 'disabled' : ''}>السابق</button><span>صفحة ${SS.page + 1} من ${pages}</span><button class="btn ghost sm" id="pNext" ${SS.page + 1 >= pages ? 'disabled' : ''}>التالي</button>

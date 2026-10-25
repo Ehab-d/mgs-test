@@ -26,12 +26,17 @@ document.querySelectorAll('#tabs button').forEach(b => tabRO.observe(b));
 addEventListener('resize', moveInd);
 if (document.fonts) document.fonts.ready.then(moveInd);
 
+const TITLES = { students: 'الطلبة', routes: 'خطوط السير', drivers: 'السائقين', supervisors: 'المشرفات', buses: 'الباصات' };
+
 function go(v) {
   curView = v;
   const m = $('#main'); m.onclick = m.onchange = null;
   document.querySelectorAll('#tabs button').forEach(b => b.dataset.v === v ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   moveInd();
+  document.title = TITLES[v] + ' – إدارة الباصات';
+  $('#live').textContent = 'صفحة ' + TITLES[v];
   m.innerHTML = '<div class="empty">جاري التحميل…</div>';
+  m.focus({ preventScroll: true });
   VIEWS[v]().catch(e => toast(errMsg(e), 'err'));
 }
 

@@ -11,7 +11,7 @@ async function showRoutes() {
     ${pick(REF.drivers, d => d.name, r.driver_id, 'driver_id', r.id, 'السائق')}
     ${pick(REF.supervisors, s => s.name, r.supervisor_id, 'supervisor_id', r.id, 'المشرفة')}
     ${pick(REF.buses, b => 'لوحة ' + b.plate, r.bus_id, 'bus_id', r.id, 'الباص')}
-    <div class="cells"><button class="btn red sm" data-a="open" data-id="${r.id}">فتح الخط وإضافة طلبة</button><button class="btn ghost sm" data-a="stu" data-id="${r.id}">عرض الطلبة</button><button class="btn ghost sm" data-a="print" data-id="${r.id}">طباعة الخط</button><button class="btn ghost sm" data-a="edit" data-id="${r.id}">تعديل</button></div></div>`).join('') || '<div class="empty">لا توجد خطوط. أضف أول خط سير.</div>'}</div>`;
+    <div class="cells"><button class="btn red sm" data-a="open" data-id="${r.id}" aria-label="فتح الخط ${r.num} وإضافة طلبة">فتح الخط وإضافة طلبة</button><button class="btn ghost sm" data-a="stu" data-id="${r.id}">عرض الطلبة</button><button class="btn ghost sm" data-a="print" data-id="${r.id}">طباعة الخط</button><button class="btn ghost sm" data-a="edit" data-id="${r.id}">تعديل</button></div></div>`).join('') || '<div class="empty">لا توجد خطوط. أضف أول خط سير.</div>'}</div>`;
   $('#rAdd').onclick = () => routeForm();
   m.onchange = async e => {
     const f = e.target.dataset.field; if (!f) return;
@@ -61,7 +61,7 @@ async function openRouteView(id) {
     <button class="btn ghost" id="rvPrint">طباعة</button><button class="btn ghost" id="rvPick">تسكين طالب موجود</button><button class="btn red" id="rvAdd">+ إضافة طالب للخط</button></div>
   <div class="stats" id="rvInfo"></div>
   <div class="bar one"><label>بحث داخل الخط<input id="rvQ" type="search" placeholder="اسم / هاتف / عنوان"></label></div>
-  <div class="wrap"><table><thead><tr><th class="hide-m">م</th><th>الطالب</th><th>الصف</th><th>العنوان</th><th>الهاتف</th><th>حالة الاشتراك</th><th></th></tr></thead><tbody id="rvBody"></tbody></table><div id="rvEmpty" class="empty" hidden>مفيش طلاب في الخط ده لسه. اضغط "إضافة طالب للخط".</div></div>`;
+  <div class="wrap"><table><caption class="sr">طلاب الخط</caption><thead><tr><th scope="col" class="hide-m">م</th><th scope="col">الطالب</th><th scope="col">الصف</th><th scope="col">العنوان</th><th scope="col">الهاتف</th><th scope="col">حالة الاشتراك</th><th scope="col"></th></tr></thead><tbody id="rvBody"></tbody></table><div id="rvEmpty" class="empty" hidden>مفيش طلاب في الخط ده لسه. اضغط "إضافة طالب للخط".</div></div>`;
   $('#rvBack').onclick = showRoutes;
   $('#rvAdd').onclick = () => studentForm(null, { route_id: RV.id, after: refreshRV });
   $('#rvPick').onclick = pickStudents;
@@ -91,15 +91,16 @@ function drawRV() {
     <td data-l="الصف"><span class="gr gr-${esc(s.grade)}">${esc(s.grade)}</span></td>
     <td data-l="العنوان" class="full-m">${esc(s.address) || '—'}</td>
     <td class="ph" data-l="الهاتف">${[s.phone1, s.phone2].filter(Boolean).map(p => `<a href="tel:${esc(p)}">${esc(p)}</a>`).join('<br>') || '—'}</td>
-    <td data-l="حالة الاشتراك"><button class="tag ${s.bus_paid ? 'y' : 'n'}" data-a="paid" data-id="${s.id}" title="اضغط للتغيير">${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}</button></td>
-    <td class="full-m"><div class="cells"><button class="btn ghost sm" data-a="edit" data-id="${s.id}">تعديل</button><button class="btn ghost sm" data-a="out" data-id="${s.id}">إخراج من الخط</button></div></td></tr>`).join('');
+    <td data-l="حالة الاشتراك"><button class="tag ${s.bus_paid ? 'y' : 'n'}" data-a="paid" data-id="${s.id}" aria-label="اشتراك ${esc(s.name)}: ${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}، اضغط للتغيير">${s.bus_paid ? 'مدفوع' : 'غير مدفوع'}</button></td>
+    <td class="full-m"><div class="cells"><button class="btn ghost sm" data-a="edit" data-id="${s.id}" aria-label="تعديل ${esc(s.name)}">تعديل</button><button class="btn ghost sm" data-a="out" data-id="${s.id}" aria-label="إخراج ${esc(s.name)} من الخط">إخراج من الخط</button></div></td></tr>`).join('');
   $('#rvEmpty').hidden = L.length > 0;
 }
 
 /* تسكين طالب موجود (غير مسكّن) في الخط المفتوح */
 function pickStudents() {
   const d = document.createElement('dialog');
-  d.innerHTML = `<form onsubmit="return false"><h3>تسكين طالب موجود في الخط</h3>
+  d.setAttribute('aria-labelledby', 'pkT');
+  d.innerHTML = `<form onsubmit="return false"><h3 id="pkT">تسكين طالب موجود في الخط</h3>
     <label class="full">ابحث عن طالب بدون خط<input id="pkQ" type="search" placeholder="اسم / هاتف"></label>
     <div class="full" id="pkList"></div><div class="acts"><button type="button" class="btn ghost" data-x>إغلاق</button></div></form>`;
   document.body.append(d); d.showModal();

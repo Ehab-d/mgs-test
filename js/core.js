@@ -7,7 +7,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 
 function toast(msg, type = '') {
   const t = document.createElement('div');
-  t.className = 'toast ' + type; t.textContent = msg;
+  t.className = 'toast ' + type; t.textContent = msg; t.setAttribute('role', type ? 'alert' : 'status');
   $('#toasts').append(t); setTimeout(() => t.remove(), type ? 5000 : 2500);
 }
 function errMsg(e) {
@@ -49,7 +49,8 @@ function fieldHtml(f, v) {
 }
 function openForm({ title, fields, values = {}, onSave, onDelete }) {
   const d = document.createElement('dialog');
-  d.innerHTML = `<form><h3>${esc(title)}</h3>${fields.map(f => fieldHtml(f, values[f.k])).join('')}
+  const tid = 'dt' + Math.random().toString(36).slice(2, 7); d.setAttribute('aria-labelledby', tid);
+  d.innerHTML = `<form><h3 id="${tid}">${esc(title)}</h3>${fields.map(f => fieldHtml(f, values[f.k])).join('')}
   <div class="acts"><button class="btn red" type="submit">حفظ</button><button type="button" class="btn ghost" data-x>إلغاء</button>
   ${onDelete ? '<span class="sp"></span><button type="button" class="btn ghost" data-del>حذف</button>' : ''}</div></form>`;
   document.body.append(d); d.showModal();

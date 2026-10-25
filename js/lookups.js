@@ -25,7 +25,7 @@ async function showLookup(key) {
   const list = REF[key];
   const m = $('#main');
   m.innerHTML = `<div class="head"><h2>${c.title} (${list.length})</h2><span class="sp"></span><button class="btn red" id="lAdd">+ إضافة ${c.one}</button></div>
-  <div class="wrap"><table><thead><tr>${c.cols.map(x => `<th>${x[0]}</th>`).join('')}<th>الخطوط</th><th>عدد الطلبة</th><th>الحالة</th><th></th></tr></thead><tbody>
+  <div class="wrap"><table><caption class="sr">${c.title}</caption><thead><tr>${c.cols.map(x => `<th scope="col">${x[0]}</th>`).join('')}<th scope="col">الخطوط</th><th scope="col">عدد الطلبة</th><th scope="col">الحالة</th><th scope="col"><span class="sr">إجراءات</span></th></tr></thead><tbody>
   ${list.map(x => {
     const rs = REF.routes.filter(r => r[c.rkey] === x.id), n = rs.reduce((a, r) => a + (counts[r.id] || 0), 0);
     return `<tr class="${x.active ? '' : 'off'}">${c.cols.map(([l, f, cl]) => `<td data-l="${l}" class="${cl}">${f(x)}</td>`).join('')}
