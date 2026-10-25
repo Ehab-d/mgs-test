@@ -44,6 +44,8 @@ tr.off td{opacity:.55}
 .tag.y{background:var(--okbg);color:var(--ok)}.tag.n{background:var(--badbg);color:var(--red)}
 .g{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:0 8px;font-weight:600;font-size:.8rem}
 .empty{padding:30px;text-align:center;color:var(--mute)}
+.bar.one{grid-template-columns:1fr}
+.pk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.pk b{flex:1;min-width:0}
 .pager{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;color:var(--mute);font-size:.9rem}
 .pager select{width:auto}
 .cells{display:flex;gap:6px;flex-wrap:wrap}

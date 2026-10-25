@@ -94,10 +94,10 @@ function drawBulk() {
   };
 }
 
-function studentForm(s) {
+function studentForm(s, o = {}) {
   openForm({
     title: s ? 'تعديل بيانات الطالب' : 'إضافة طالب',
-    values: s ? { ...s } : { grade: 'G1', route_id: SF.route_id && SF.route_id !== 'none' ? SF.route_id : '' },
+    values: s ? { ...s } : { grade: 'G1', route_id: o.route_id ?? (SF.route_id && SF.route_id !== 'none' ? SF.route_id : '') },
     fields: [
       { k: 'name', label: 'اسم الطالب', req: true, full: true },
       { k: 'grade', label: 'الصف', type: 'select', req: true, opts: GRADES.map(g => [g, g]) },
@@ -107,8 +107,8 @@ function studentForm(s) {
       { k: 'phone2', label: 'رقم الموبايل 2', type: 'tel' },
       { k: 'bus_paid', label: 'حالة الاشتراك: مدفوع', type: 'checkbox', full: true }
     ],
-    onSave: async v => { v.route_id = v.route_id || null; await run(s ? sb.from('students').update(v).eq('id', s.id) : sb.from('students').insert(v)); toast('تم الحفظ'); loadStudents(); },
-    onDelete: s && (async () => { if (!confirm('حذف الطالب ' + s.name + '؟')) return false; await run(sb.from('students').delete().eq('id', s.id)); SS.sel.delete(s.id); toast('تم الحذف'); loadStudents(); return true; })
+    onSave: async v => { v.route_id = v.route_id || null; await run(s ? sb.from('students').update(v).eq('id', s.id) : sb.from('students').insert(v)); toast('تم الحفظ'); (o.after || loadStudents)(); },
+    onDelete: s && (async () => { if (!confirm('حذف الطالب ' + s.name + '؟')) return false; await run(sb.from('students').delete().eq('id', s.id)); SS.sel.delete(s.id); toast('تم الحذف'); (o.after || loadStudents)(); return true; })
   });
 }
 
