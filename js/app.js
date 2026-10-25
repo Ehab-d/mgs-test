@@ -2,6 +2,14 @@
 const VIEWS = { students: showStudents, routes: showRoutes, drivers: () => showLookup('drivers'), supervisors: () => showLookup('supervisors'), buses: () => showLookup('buses') };
 let curView = 'students';
 
+/* اسم المستخدم -> بريد داخلي. الأسماء العربية بتتحول لـ hex عشان البريد يفضل ASCII صالح */
+function toEmail(u) {
+  u = u.trim().toLowerCase();
+  if (u.includes('@')) return u;
+  if (/^[a-z0-9._-]+$/.test(u)) return u + '@mgs.app';
+  return 'u-' + [...new TextEncoder().encode(u)].map(b => b.toString(16).padStart(2, '0')).join('') + '@mgs.app';
+}
+
 function moveInd() {
   const a = document.querySelector('#tabs [aria-current]'), i = $('#tabs .ind');
   if (!a || !i || !a.offsetWidth) return;
@@ -34,7 +42,7 @@ $('#logout').onclick = () => sb.auth.signOut();
 $('#loginForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, btn = f.querySelector('button'); btn.disabled = true; $('#loginErr').textContent = '';
-  const { error } = await sb.auth.signInWithPassword({ email: (u => u.includes('@') ? u : u + '@mgs.app')(f.email.value.trim().toLowerCase()), password: f.password.value });
+  const { error } = await sb.auth.signInWithPassword({ email: toEmail(f.email.value), password: f.password.value });
   btn.disabled = false;
   if (error) $('#loginErr').textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
 };
@@ -52,7 +60,7 @@ $('#account').onclick = () => openForm({
   ],
   onSave: async v => {
     if (!v.u && !v.p) throw new Error('اكتب اسم مستخدم أو كلمة مرور جديدة');
-    await run(sb.rpc('change_credentials', { current_password: v.cur, new_username: v.u || '', new_password: v.p || '' }));
+    await run(sb.rpc('change_credentials', { current_password: v.cur, new_username: v.u ? toEmail(v.u) : '', new_password: v.p || '' }));
     toast('تم التغيير، سجّل دخول من جديد');
     setTimeout(() => sb.auth.signOut(), 800);
   }
